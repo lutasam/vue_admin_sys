@@ -47,4 +47,23 @@ export default class httpUtil {
       }
     });
   }
+
+  /**
+   * POST请求 带header
+   * @param url
+   * @param params
+   * @param header
+   * @returns {Promise<R>}
+   */
+  static postWithHeaders(url, params, headers) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let res = await axios.post(url, params, headers);
+        resolve(res);
+      } catch (error) {
+        let errorMsg = `请求报错路径：${url} \n 请求错误信息: ${error}`;
+        reject(error);
+      }
+    });
+  }
 }

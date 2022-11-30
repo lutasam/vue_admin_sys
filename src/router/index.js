@@ -19,6 +19,11 @@ export default new Router({
           meta: { title: "系统首页" },
         },
         {
+          path: "user_info",
+          component: () => import("../pages/user_info"),
+          meta: { title: "个人信息" },
+        },
+        {
           path: "commodity",
           component: () => import("../pages/commodity"),
           meta: { title: "商品管理" },

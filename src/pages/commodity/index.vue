@@ -138,6 +138,9 @@ export default {
       },
     };
   },
+  created: function() {
+    this.loadData();
+  },
   methods: {
     handleSizeChange(val) {
       // console.log(`每页 ${val} 条`);

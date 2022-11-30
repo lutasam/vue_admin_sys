@@ -43,7 +43,11 @@
           </el-form-item>
           <el-form-item style="text-align: center">
             <el-link target="_blank" @click="openRegisterDlg"
-              >没有账户？注册一个！</el-link
+              >没有账户？注册一个</el-link
+            >
+            <span> | </span>
+            <el-link target="_blank" @click="openResetPassDlg"
+              >忘记密码？</el-link
             >
           </el-form-item>
         </el-form>
@@ -128,7 +132,80 @@
                 type="primary"
                 style="width: 33%"
                 size="large"
-                @click="handleActive"
+                @click="handleActiveUser"
+                >验证</el-button
+              >
+            </el-form-item>
+          </el-form>
+        </div>
+      </el-dialog>
+
+      <!-- 重置密码窗口 -->
+      <el-dialog
+        :visible.sync="isResetPassDlgVisiable"
+        :modal-append-to-body="false"
+        width="30%"
+      >
+        <div class="right-wrapper">
+          <el-form
+            ref="resetPassRef"
+            :model="resetPassForm"
+            :rules="loginRules"
+          >
+            <div class="login-title">重置密码</div>
+            <el-form-item style="margin-top: 20px" prop="email">
+              <el-input
+                v-model="resetPassForm.email"
+                size="large"
+                style="width: 300px"
+                placeholder="邮箱"
+                prefix-icon="el-icon-user"
+              ></el-input>
+            </el-form-item>
+            <el-form-item style="margin-top: 20px" prop="password">
+              <el-input
+                show-password
+                v-model="resetPassForm.password"
+                size="large"
+                style="width: 300px"
+                type="password"
+                placeholder="密码"
+                prefix-icon="el-icon-lock"
+              ></el-input>
+            </el-form-item>
+            <el-form-item style="margin-top: 20px" prop="repassword">
+              <el-input
+                show-password
+                v-model="resetPassForm.repassword"
+                size="large"
+                style="width: 300px"
+                type="password"
+                placeholder="确认密码"
+                prefix-icon="el-icon-lock"
+              ></el-input>
+            </el-form-item>
+            <el-form-item style="margin-top: 30px">
+              <el-button
+                type="primary"
+                style="width: 100%"
+                size="large"
+                @click="handleResetPass"
+                >重置密码</el-button
+              >
+            </el-form-item>
+            <el-form-item style="margin-top: 30px">
+              <el-input
+                v-model="resetPassForm.active_code"
+                size="large"
+                style="width: 200px"
+                placeholder="验证码"
+                prefix-icon="el-icon-lock"
+              ></el-input>
+              <el-button
+                type="primary"
+                style="width: 33%"
+                size="large"
+                @click="handleActiveResetPass"
                 >验证</el-button
               >
             </el-form-item>
@@ -140,7 +217,13 @@
 </template>
 
 <script>
-import { doLogin, doRegister, activeUser } from "../../api/login";
+import {
+  doLogin,
+  applyRegister,
+  activeUser,
+  resetPass,
+  activeResetPass,
+} from "../../api/login";
 export default {
   name: "login",
   data() {
@@ -162,13 +245,18 @@ export default {
       if (value === "") {
         callback(new Error("密码不能为空"));
       } else if (value !== this.registerForm.password) {
-        callback(new Error("两次输入密码不一致!"));
+        if (value !== this.resetPassForm.password) {
+          callback(new Error("两次输入密码不一致!"));
+        } else {
+          callback();
+        }
       } else {
         callback();
       }
     };
     return {
       isRegisterDlgVisiable: false,
+      isResetPassDlgVisiable: false,
       loginForm: {
         email: "",
         password: "",
@@ -179,6 +267,12 @@ export default {
         repassword: "",
         nickname: "",
         sign: "",
+        active_code: "",
+      },
+      resetPassForm: {
+        email: "",
+        password: "",
+        repassword: "",
         active_code: "",
       },
       loginRules: {
@@ -224,6 +318,9 @@ export default {
     openRegisterDlg() {
       this.isRegisterDlgVisiable = true;
     },
+    openResetPassDlg() {
+      this.isResetPassDlgVisiable = true;
+    },
     handleRegister() {
       this.$refs["registerRef"].validate((valid) => {
         if (!valid) {
@@ -231,11 +328,8 @@ export default {
         } else {
           let params = {
             email: this.registerForm.email,
-            password: this.registerForm.password,
-            nickname: this.registerForm.nickname,
-            sign: this.registerForm.sign,
           };
-          doRegister(params).then((res) => {
+          applyRegister(params).then((res) => {
             if (res.code === 200) {
               this.$message.success(
                 "注册成功，验证码已发到您的邮箱，请在5分钟内输入验证码激活账号"
@@ -249,18 +343,60 @@ export default {
         }
       });
     },
-    handleActive() {
+    handleResetPass() {
+      this.$refs["resetPassRef"].validate((valid) => {
+        if (!valid) {
+          return;
+        } else {
+          let params = {
+            email: this.resetPassForm.email,
+          };
+          resetPass(params).then((res) => {
+            if (res.code === 200) {
+              this.$message.success(
+                "注册成功，验证码已发到您的邮箱，请在5分钟内输入验证码激活账号"
+              );
+              return;
+            } else {
+              this.$message.error(res.msg);
+              return;
+            }
+          });
+        }
+      });
+    },
+    handleActiveUser() {
       let params = {
         email: this.registerForm.email,
         active_code: this.registerForm.active_code,
+        password: this.registerForm.password,
+        nickname: this.registerForm.nickname,
+        sign: this.registerForm.sign,
       };
       activeUser(params).then((res) => {
         if (res.code === 200) {
-          this.$message.error("验证成功！");
+          this.$message.success("验证成功！");
           this.isRegisterDlgVisiable = false;
           return;
         } else {
           this.$message.success(res.msg);
+          return;
+        }
+      });
+    },
+    handleActiveResetPass() {
+      let params = {
+        email: this.resetPassForm.email,
+        active_code: this.resetPassForm.active_code,
+        password: this.resetPassForm.password,
+      };
+      activeResetPass(params).then((res) => {
+        if (res.code === 200) {
+          this.$message.success("验证成功！");
+          this.isResetPassDlgVisiable = false;
+          return;
+        } else {
+          this.$message.error(res.msg);
           return;
         }
       });

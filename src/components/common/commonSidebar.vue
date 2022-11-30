@@ -73,6 +73,11 @@ export default {
         },
         {
           icon: "el-icon-location-outline",
+          index: "user_info",
+          title: "个人信息",
+        },
+        {
+          icon: "el-icon-location-outline",
           index: "commodity",
           title: "商品管理",
         },

@@ -29,12 +29,12 @@ axios.interceptors.request.use(
     if (token) {
       config.headers.Authorization = token;
     }
-    if (config.method === "get") {
-      config.params = {
-        t: Date.parse(new Date()) / 1000,
-        ...config.params,
-      };
-    }
+    // if (config.method === "get") {
+    //   config.params = {
+    //     t: Date.parse(new Date()) / 1000,
+    //     ...config.params,
+    //   };
+    // }
     loadingPage = Loading.service(options);
     return config;
   },
@@ -64,7 +64,7 @@ axios.interceptors.response.use(
   (error) => {
     loadingPage.close();
     if (
-      error.response.status === 500 ||
+      error.response.code === 500 ||
       error.response.data.code === 100006 ||
       error.response.data.code === 100007
     ) {
